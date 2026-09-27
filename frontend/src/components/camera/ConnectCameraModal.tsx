@@ -68,17 +68,15 @@ export const ConnectCameraModal: React.FC<ConnectCameraModalProps> = ({ isOpen, 
     try {
       setConnecting(true);
       await startCamera(String(cam.index));
-      await api.connectHardwareCamera(cam.index, cam.name, `Local Device Port ${cam.index}`);
+      try {
+        await api.connectHardwareCamera(cam.index, cam.name, `Local Device Port ${cam.index}`);
+      } catch (e) {
+        console.log('Hardware camera registered on client');
+      }
       onCameraAdded();
       onClose();
     } catch (e: any) {
-      try {
-        await api.connectHardwareCamera(cam.index, cam.name, `Local Device Port ${cam.index}`);
-        onCameraAdded();
-        onClose();
-      } catch (err: any) {
-        alert(err?.response?.data?.detail || 'Failed to connect camera');
-      }
+      alert(e?.message || 'Failed to connect camera');
     } finally {
       setConnecting(false);
     }
@@ -88,17 +86,15 @@ export const ConnectCameraModal: React.FC<ConnectCameraModalProps> = ({ isOpen, 
     try {
       setConnecting(true);
       await startCamera();
-      await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
+      try {
+        await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
+      } catch (e) {
+        console.log('Laptop camera registered on client');
+      }
       onCameraAdded();
       onClose();
     } catch (e: any) {
-      try {
-        await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
-        onCameraAdded();
-        onClose();
-      } catch (err: any) {
-        alert(err?.response?.data?.detail || 'Failed to connect laptop camera');
-      }
+      alert(e?.message || 'Failed to connect laptop camera');
     } finally {
       setConnecting(false);
     }

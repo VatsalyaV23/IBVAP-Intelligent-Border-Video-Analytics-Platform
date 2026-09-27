@@ -16,13 +16,28 @@ class YOLOAdapter(BaseDetectionModel):
         self.yolo_model = None
         self._init_detector()
 
+    def _find_yolo_weights(self) -> str:
+        from pathlib import Path
+        base = Path(__file__).resolve().parent.parent.parent.parent
+        candidates = [
+            base / "yolov8n.pt",
+            base / "backend" / "yolov8n.pt",
+            Path.cwd() / "yolov8n.pt",
+            Path.cwd() / "backend" / "yolov8n.pt",
+        ]
+        for c in candidates:
+            if c.exists():
+                return str(c)
+        return "yolov8n.pt"
+
     def _init_detector(self):
         try:
             from ultralytics import YOLO
-            # Try to load lightweight nano model if available
-            self.yolo_model = YOLO("yolov8n.pt")
-        except Exception:
-            # Fallback to OpenCV HOG People Detector
+            weights_path = self._find_yolo_weights()
+            self.yolo_model = YOLO(weights_path)
+            print(f"[IBVAP-YOLO-ADAPTER] Loaded YOLO from {weights_path}")
+        except Exception as e:
+            print(f"[IBVAP-YOLO-ADAPTER] Could not load YOLO ({e}), fallback to HOG")
             self.hog = cv2.HOGDescriptor()
             self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 

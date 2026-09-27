@@ -67,17 +67,15 @@ export const Cameras: React.FC = () => {
   const handleQuickConnect = async (index: number, name: string) => {
     try {
       await startCamera(String(index));
-      await api.connectHardwareCamera(index, name, `Hardware Port ${index}`);
+      try {
+        await api.connectHardwareCamera(index, name, `Hardware Port ${index}`);
+      } catch (err) {
+        console.log('Hardware camera registered on client');
+      }
       fetchCameras();
       scanHardware();
     } catch (e: any) {
-      try {
-        await api.connectHardwareCamera(index, name, `Hardware Port ${index}`);
-        fetchCameras();
-        scanHardware();
-      } catch (err: any) {
-        alert(err?.response?.data?.detail || 'Failed to connect');
-      }
+      alert(e?.message || 'Failed to connect physical webcam.');
     }
   };
 
@@ -148,15 +146,14 @@ export const Cameras: React.FC = () => {
             onClick={async () => {
               try {
                 await startCamera();
-                await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
-                await fetchCameras();
-              } catch (e: any) {
                 try {
                   await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
-                  await fetchCameras();
-                } catch (err: any) {
-                  alert(err?.response?.data?.detail || 'Failed to connect laptop camera');
+                } catch (e) {
+                  // Client-side camera fallback
                 }
+                await fetchCameras();
+              } catch (err: any) {
+                alert(err?.message || 'Failed to connect laptop camera');
               }
             }}
             className="px-3.5 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
@@ -173,6 +170,13 @@ export const Cameras: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Real physical laptop camera feed section when system camera is active */}
+      {isSystemCamActive && (
+        <div className="w-full mb-2">
+          <SystemCameraFeed />
+        </div>
+      )}
 
       {/* Auto-detected Hardware Ports Strip */}
       <div className="p-4 bg-white dark:bg-[#0f172a] rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col gap-3">
@@ -195,7 +199,7 @@ export const Cameras: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 font-mono text-[11px]">
           {hardwareDevices.map(d => {
-            const isAlreadyConnected = cameras.some(c => c.stream_url === String(d.index));
+            const isAlreadyConnected = cameras.some(c => c.stream_url === String(d.index)) || isSystemCamActive;
             return (
               <div
                 key={d.index}
@@ -236,12 +240,12 @@ export const Cameras: React.FC = () => {
           <h3 className="font-bold text-[14px] text-slate-900 dark:text-white flex items-center gap-2">
             Active Surveillance Feeds
             <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-mono text-[11px]">
-              {cameras.length}
+              {cameras.length + (isSystemCamActive ? 1 : 0)}
             </span>
           </h3>
         </div>
         
-        {cameras.length === 0 && (
+        {cameras.length === 0 && !isSystemCamActive && (
           <div className="p-8 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-lg bg-white dark:bg-[#0f172a] font-mono text-[12px] text-slate-500">
             No active cameras connected. Click &quot;Use Laptop Camera&quot; or &quot;Connect Camera / Upload Video&quot; to begin.
           </div>

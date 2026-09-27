@@ -4,7 +4,17 @@ import {
   BlockchainStatus, BlockchainRecord, AIModel, Alert, AuditLog, SystemHealthData, DetectedVehicle
 } from '../types';
 
-export const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const getCleanRootUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (!envUrl) return '';
+  let clean = envUrl.replace(/\/+$/, '');
+  if (clean.endsWith('/api')) {
+    clean = clean.substring(0, clean.length - 4);
+  }
+  return clean.replace(/\/+$/, '');
+};
+
+export const API_BASE_URL = getCleanRootUrl();
 const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 
 export const getMediaUrl = (path: string): string => {
@@ -15,8 +25,8 @@ export const getMediaUrl = (path: string): string => {
 };
 
 export const getWebSocketUrl = (path: string = '/ws/dashboard'): string => {
-  if (import.meta.env.VITE_WS_BASE_URL) {
-    return import.meta.env.VITE_WS_BASE_URL;
+  if (import.meta.env.VITE_WS_BASE_URL || import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_BASE_URL || import.meta.env.VITE_WS_URL;
   }
   const isSecure = API_BASE_URL.startsWith('https://') || window.location.protocol === 'https:';
   const wsProtocol = isSecure ? 'wss:' : 'ws:';

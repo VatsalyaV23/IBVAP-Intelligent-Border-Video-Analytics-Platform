@@ -484,6 +484,7 @@ async def process_frame(
     yolo = stream_manager.ensure_yolo()
     if yolo:
         try:
+            print(f"[IBVAP-YOLO] INFERENCE_START camera_id={camera_id} frame_dim={w}x{h}")
             results = yolo(frame, verbose=False, conf=0.25, imgsz=480)[0]
             for idx_box, box in enumerate(results.boxes):
                 cls_id = int(box.cls[0].item())
@@ -523,8 +524,11 @@ async def process_frame(
                                     "owner_or_unit": owner_s,
                                     "plate_bbox": p_res.get("plate_bbox")
                                 }
+            print(f"[IBVAP-YOLO] INFERENCE_RESULT count={len(detections)} classes={[d['class'] for d in detections]}")
         except Exception as e:
-            print(f"[IBVAP] process-frame YOLO error: {e}")
+            print(f"[IBVAP-YOLO] process-frame YOLO error: {e}")
+    else:
+        print("[IBVAP-YOLO] WARNING: yolo_model is None during process-frame call")
 
     # Fallback candidate object detection if YOLO is initializing or frame has clear subjects
     if len(detections) == 0:

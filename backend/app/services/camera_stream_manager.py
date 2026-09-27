@@ -668,25 +668,43 @@ class StreamManager:
         self.yolo_model: Optional[YOLO] = None
         self._init_yolo()
 
+    def _find_yolo_weights(self) -> str:
+        from pathlib import Path
+        base = Path(__file__).resolve().parent.parent.parent
+        candidates = [
+            base / "yolov8n.pt",
+            base / "backend" / "yolov8n.pt",
+            Path.cwd() / "yolov8n.pt",
+            Path.cwd() / "backend" / "yolov8n.pt",
+        ]
+        for c in candidates:
+            if c.exists():
+                print(f"[IBVAP-YOLO] MODEL_PATH: {c} | MODEL_EXISTS: True")
+                return str(c)
+        print(f"[IBVAP-YOLO] MODEL_PATH: yolov8n.pt (fallback) | MODEL_EXISTS: False")
+        return "yolov8n.pt"
+
     def _init_yolo(self):
         try:
-            self.yolo_model = YOLO("yolov8n.pt")
-            print("[IBVAP] YOLOv8n initialized for live streams.")
+            weights_path = self._find_yolo_weights()
+            self.yolo_model = YOLO(weights_path)
+            print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: SUCCESS | Weights: {weights_path}")
         except Exception as e:
-            print(f"[IBVAP] Could not load YOLO: {e}")
+            print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: FAILED | Error: {e}")
 
     def ensure_yolo(self) -> Optional[YOLO]:
         if self.yolo_model is None:
             try:
-                self.yolo_model = YOLO("yolov8n.pt")
-                print("[IBVAP] YOLOv8n loaded successfully.")
+                weights_path = self._find_yolo_weights()
+                self.yolo_model = YOLO(weights_path)
+                print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: SUCCESS (Lazy) | Weights: {weights_path}")
             except Exception as e:
-                print(f"[IBVAP] Could not lazy load YOLOv8n: {e}")
+                print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: LAZY_FAIL | Error: {e}")
                 try:
-                    self.yolo_model = YOLO("yolov8s.pt")
-                    print("[IBVAP] YOLOv8s loaded successfully as fallback.")
+                    self.yolo_model = YOLO("yolov8n.pt")
+                    print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: FALLBACK_SUCCESS")
                 except Exception as ex:
-                    print(f"[IBVAP] Could not lazy load YOLOv8s: {ex}")
+                    print(f"[IBVAP-YOLO] MODEL_LOAD_STATUS: CRITICAL_FAIL | Error: {ex}")
         return self.yolo_model
 
     @staticmethod

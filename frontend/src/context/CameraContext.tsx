@@ -57,6 +57,7 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [stream, setStream] = useState<MediaStream | null>(null);
 
   const streamRef = useRef<MediaStream | null>(null);
+  const persistentVideoRef = useRef<HTMLVideoElement | null>(null);
   const videoElementsRef = useRef<Set<HTMLVideoElement>>(new Set());
   const activeVideoRef = useRef<HTMLVideoElement | null>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -93,7 +94,7 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       activeVideoRef.current = visible;
       return visible;
     }
-    return activeVideoRef.current || list[0] || null;
+    return activeVideoRef.current || list[0] || persistentVideoRef.current || null;
   };
 
   const attachVideoElement = (videoEl: HTMLVideoElement | null) => {
@@ -142,6 +143,9 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       streamRef.current = null;
     }
     setStream(null);
+    if (persistentVideoRef.current) {
+      persistentVideoRef.current.srcObject = null;
+    }
     videoElementsRef.current.forEach(v => {
       v.srcObject = null;
     });
@@ -162,7 +166,7 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     intervalRef.current = setInterval(() => {
       if (processingRef.current) return;
 
-      const video = getActiveVisibleVideo();
+      const video = getActiveVisibleVideo() || persistentVideoRef.current;
       if (!video || video.readyState < 2) return;
 
       const rawW = video.videoWidth || 640;
@@ -283,12 +287,17 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (streamRef.current && streamRef.current.active && (!deviceIdToUse || deviceIdToUse === selectedDeviceId)) {
       setIsSystemCamActive(true);
       setStatus('Connected');
+      if (persistentVideoRef.current && persistentVideoRef.current.srcObject !== streamRef.current) {
+        persistentVideoRef.current.srcObject = streamRef.current;
+        persistentVideoRef.current.play().catch(() => {});
+      }
       videoElementsRef.current.forEach(v => {
         if (v.srcObject !== streamRef.current) {
           v.srcObject = streamRef.current;
         }
         v.play().catch(() => {});
       });
+      startInferenceLoop();
       return;
     }
 
@@ -313,6 +322,11 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       streamRef.current = mediaStream;
       setStream(mediaStream);
       setIsSystemCamActive(true);
+
+      if (persistentVideoRef.current) {
+        persistentVideoRef.current.srcObject = mediaStream;
+        persistentVideoRef.current.play().catch(() => {});
+      }
 
       videoElementsRef.current.forEach(v => {
         v.srcObject = mediaStream;
@@ -386,6 +400,21 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         attachOverlayCanvasElement
       }}
     >
+      <video
+        ref={persistentVideoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          position: 'fixed',
+          top: -9999,
+          left: -9999,
+          width: 640,
+          height: 480,
+          opacity: 0,
+          pointerEvents: 'none'
+        }}
+      />
       {children}
     </CameraContext.Provider>
   );
