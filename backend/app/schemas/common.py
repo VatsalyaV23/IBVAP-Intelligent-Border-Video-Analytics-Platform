@@ -49,6 +49,10 @@ class CameraResponse(BaseModel):
     latitude: float
     longitude: float
     health: Optional[CameraHealthSchema] = None
+    person_count: int = 0
+    vehicle_count: int = 0
+    evidence_count: int = 0
+    last_detection_time: Optional[str] = None
 
 class CameraCreate(BaseModel):
     id: str

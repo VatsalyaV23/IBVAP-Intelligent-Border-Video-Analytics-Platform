@@ -7,21 +7,27 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+import time
+from datetime import datetime, timezone
+from sqlalchemy import select, delete, func
 from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.models.camera import Camera, CameraHealth
+from app.models.evidence import EvidenceItem
 from app.schemas.common import CameraResponse, CameraCreate
 from app.services.camera_service import CameraService
 from app.services.camera_stream_manager import stream_manager, StreamManager
 from app.services.camera_diagnostics import CameraDiagnosticEngine, CameraDiagnosticCodes, sanitize_stream_url
 from app.services.evidence_service import EvidenceHashService
 from app.services.blockchain_service import LocalLedgerProvider
+from app.services.incident_engine import IncidentEngine
 from app.services.audit_service import AuditService
 from app.core.websockets import ws_manager
 from app.core.config import settings
 from app.models.vehicle import KnownAuthorizedVehicle
 from ai_engine.ocr.paddle_ocr_engine import paddle_ocr_engine
+
+last_process_frame_incident_time: Dict[str, float] = {}
 
 router = APIRouter(prefix="/cameras", tags=["Cameras"])
 
@@ -314,6 +320,23 @@ async def list_cameras(db: AsyncSession = Depends(get_db)):
         current_status = feed.connection_status if feed else ("ONLINE" if c.is_active else "OFFLINE")
         current_fps = feed.current_fps if feed else (c.health.current_fps if c.health else float(c.fps))
 
+        # Query evidence count for this camera
+        ev_stmt = select(func.count(EvidenceItem.id)).where(EvidenceItem.camera_id == c.id)
+        ev_res = await db.execute(ev_stmt)
+        evidence_count = ev_res.scalar() or 0
+
+        person_count = 0
+        vehicle_count = 0
+        last_det_time = None
+
+        if feed:
+            with feed.lock:
+                dets = feed.latest_detections
+                person_count = sum(1 for d in dets if d.get("class") == "person")
+                vehicle_count = sum(1 for d in dets if d.get("class") in ["car", "truck", "bus", "motorcycle"])
+                if feed.last_incident_time > 0:
+                    last_det_time = datetime.fromtimestamp(feed.last_incident_time, tz=timezone.utc).isoformat()
+
         health_schema = None
         if c.health:
             health_schema = {
@@ -337,7 +360,11 @@ async def list_cameras(db: AsyncSession = Depends(get_db)):
             is_thermal=c.is_thermal,
             latitude=c.latitude,
             longitude=c.longitude,
-            health=health_schema
+            health=health_schema,
+            person_count=person_count,
+            vehicle_count=vehicle_count,
+            evidence_count=evidence_count,
+            last_detection_time=last_det_time
         ))
     return out
 
@@ -574,6 +601,52 @@ async def process_frame(
                 "owner_or_unit": owner_s,
                 "plate_bbox": sp.get("plate_bbox")
             }
+
+    # Auto evidence capture & incident creation pipeline with 10s per-camera debouncing
+    is_human = any(d.get("class") == "person" for d in detections)
+    is_vehicle = any(d.get("class") in ["car", "truck", "bus", "motorcycle"] for d in detections)
+
+    if is_human or is_vehicle or plate_scanned:
+        now_t = time.time()
+        last_t = last_process_frame_incident_time.get(camera_id, 0.0)
+        if (now_t - last_t) > 10.0:
+            last_process_frame_incident_time[camera_id] = now_t
+            
+            # Draw bounding box overlays on frame copy for real evidence image
+            annotated = frame.copy()
+            for d in detections:
+                x1, y1, x2, y2 = d["bbox"]
+                cls_name = d["class"]
+                conf = d["confidence"]
+                track_code = d["tracking_id"]
+                is_p = cls_name == "person"
+                color = (0, 255, 128) if is_p else (255, 180, 0)
+                cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
+                label = f"{cls_name.upper()} #{track_code} {int(conf * 100)}%"
+                cv2.rectangle(annotated, (int(x1), max(0, int(y1) - 22)), (int(x1) + len(label) * 9, int(y1)), (15, 23, 42), -1)
+                cv2.putText(annotated, label, (int(x1) + 4, max(12, int(y1) - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.42, color, 1)
+
+            if plate_scanned and plate_scanned.get("license_plate"):
+                p_text = plate_scanned["license_plate"]
+                p_box = plate_scanned.get("plate_bbox")
+                p_color = (0, 255, 128) if plate_scanned.get("is_known") else (0, 69, 255)
+                if p_box and len(p_box) == 4:
+                    cv2.rectangle(annotated, (int(p_box[0]), int(p_box[1])), (int(p_box[2]), int(p_box[3])), p_color, 2)
+                p_label = f"PLATE: {p_text}"
+                cv2.putText(annotated, p_label, (10, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, p_color, 2)
+
+            ret, jpg_bytes = cv2.imencode('.jpg', annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
+            if ret:
+                try:
+                    await IncidentEngine.create_live_incident_from_detection(
+                        camera_id=camera_id,
+                        camera_name=f"Laptop Camera ({camera_id})",
+                        frame_bytes=jpg_bytes.tobytes(),
+                        detections=detections,
+                        movement_level=35.0
+                    )
+                except Exception as ex:
+                    print(f"[IBVAP] process_frame auto incident error: {ex}")
 
     return {
         "status": "SUCCESS",

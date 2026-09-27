@@ -13,6 +13,7 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
     selectedDeviceId,
     fps,
     resolution,
+    detections,
     latestPlate,
     startCamera,
     stopCamera,
@@ -21,6 +22,9 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
     detachVideoElement,
     attachOverlayCanvasElement
   } = useCamera();
+
+  const personCount = detections.filter(d => d.class === 'person').length;
+  const vehicleCount = detections.filter(d => ['car', 'truck', 'bus', 'motorcycle'].includes(d.class)).length;
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,7 +37,8 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
       attachOverlayCanvasElement(overlayCanvasRef.current);
     }
 
-    if (status === 'Disconnected' || status === 'Stopped') {
+    // Auto-start ONLY if status is initial Disconnected, never if user explicitly Stopped
+    if (status === 'Disconnected') {
       startCamera(selectedDeviceId);
     }
 
@@ -43,7 +48,7 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
       }
       attachOverlayCanvasElement(null);
     };
-  }, [status, selectedDeviceId]);
+  }, [selectedDeviceId]);
 
   const handleStopClick = () => {
     stopCamera();
@@ -179,9 +184,10 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
           <div className="absolute inset-0 p-2.5 flex flex-col justify-between pointer-events-none">
             <div className="flex items-center justify-between text-white/90 font-mono text-[10px] bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded">
               <span>SRC: PHYSICAL WEBCAM ({resolution})</span>
-              <span className="text-emerald-400 font-bold">
-                YOLOv8 DETECT + PADDLEOCR | {fps} FPS
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold">👤 {personCount} | 🚗 {vehicleCount}</span>
+                <span className="text-sky-400 font-bold">YOLOv8 Active | {fps} FPS</span>
+              </div>
             </div>
 
             {latestPlate && (

@@ -32,6 +32,10 @@ export interface Camera {
   latitude: number;
   longitude: number;
   health?: CameraHealth;
+  person_count?: number;
+  vehicle_count?: number;
+  evidence_count?: number;
+  last_detection_time?: string;
 }
 
 export interface IncidentTimeline {
