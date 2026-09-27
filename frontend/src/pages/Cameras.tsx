@@ -280,19 +280,27 @@ export const Cameras: React.FC = () => {
                 {/* Real-time YOLO Telemetry Metrics */}
                 <div className="p-2.5 font-mono text-[10px] grid grid-cols-2 gap-1.5 bg-slate-50/60 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-slate-400">👤 Persons:</span>
+                    <span className="text-slate-400 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">person</span> Persons:
+                    </span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">{systemPersonCount}</span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-slate-400">🚗 Vehicles:</span>
+                    <span className="text-slate-400 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">directions_car</span> Vehicles:
+                    </span>
                     <span className="font-bold text-amber-500">{systemVehicleCount}</span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-slate-400">⚡ FPS:</span>
+                    <span className="text-slate-400 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">bolt</span> FPS:
+                    </span>
                     <span className="font-bold text-sky-400">{systemFps} FPS</span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 truncate">
-                    <span className="text-slate-400">📐 Res:</span>
+                    <span className="text-slate-400 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">aspect_ratio</span> Res:
+                    </span>
                     <span className="font-bold text-slate-700 dark:text-slate-300 truncate">{systemRes}</span>
                   </div>
                 </div>
@@ -387,19 +395,27 @@ export const Cameras: React.FC = () => {
                   {/* YOLO Counts & Telemetry Grid */}
                   <div className="p-2.5 font-mono text-[10px] grid grid-cols-2 gap-1.5 bg-slate-50/60 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400">👤 Persons:</span>
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">person</span> Persons:
+                      </span>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400">{cam.person_count || 0}</span>
                     </div>
                     <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400">🚗 Vehicles:</span>
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">directions_car</span> Vehicles:
+                      </span>
                       <span className="font-bold text-amber-500">{cam.vehicle_count || 0}</span>
                     </div>
                     <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-400">📁 Evidence:</span>
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">folder</span> Evidence:
+                      </span>
                       <span className="font-bold text-sky-400">{cam.evidence_count || 0}</span>
                     </div>
                     <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 truncate">
-                      <span className="text-slate-400">🕒 Last:</span>
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">schedule</span> Last:
+                      </span>
                       <span className="font-bold text-slate-700 dark:text-slate-300 truncate">
                         {cam.last_detection_time ? new Date(cam.last_detection_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'None'}
                       </span>

@@ -109,7 +109,14 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose, bar
         <div className="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none">
           <div className="flex items-center justify-between text-white/90 font-mono text-[9px] bg-black/65 backdrop-blur-xs px-2 py-0.5 rounded">
             <span>SRC: WEBCAM ({resolution})</span>
-            <span className="text-emerald-400 font-bold">YOLOv8 Active | {fps} FPS</span>
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[12px]">person</span> {personCount}
+                <span className="text-white/40 font-normal">|</span>
+                <span className="material-symbols-outlined text-[12px]">directions_car</span> {vehicleCount}
+              </span>
+              <span className="text-sky-400 font-bold">YOLOv8 Active | {fps} FPS</span>
+            </div>
           </div>
 
           {latestPlate && (
