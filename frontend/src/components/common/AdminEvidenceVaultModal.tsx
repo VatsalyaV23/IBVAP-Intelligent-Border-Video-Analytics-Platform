@@ -138,14 +138,16 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
     }
   };
 
-  const filteredItems = archiveList.filter(item => {
+  const safeArchiveList = Array.isArray(archiveList) ? archiveList : [];
+
+  const filteredItems = safeArchiveList.filter(item => {
     if (filterMode === 'USER_DELETED') return item.is_deleted_by_user;
     if (filterMode === 'ACTIVE') return !item.is_deleted_by_user;
     return true;
   });
 
-  const totalCaptured = archiveList.length;
-  const totalUserDeleted = archiveList.filter(i => i.is_deleted_by_user).length;
+  const totalCaptured = safeArchiveList.length;
+  const totalUserDeleted = safeArchiveList.filter(i => i.is_deleted_by_user).length;
   const totalActive = totalCaptured - totalUserDeleted;
 
   return (

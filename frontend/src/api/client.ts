@@ -36,7 +36,7 @@ export const api = {
   getCameras: async (): Promise<Camera[]> => {
     try {
       const res = await axios.get(`${API_BASE}/cameras`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -45,7 +45,7 @@ export const api = {
   scanHardwareCameras: async (): Promise<{ detected_cameras: Array<{ index: number; name: string; resolution: string; fps: number }> }> => {
     try {
       const res = await axios.get(`${API_BASE}/cameras/scan-hardware`);
-      return res.data;
+      return res.data && Array.isArray(res.data.detected_cameras) ? res.data : { detected_cameras: [{ index: 0, name: 'Integrated Laptop Webcam (Index 0)', resolution: '640x480', fps: 30 }] };
     } catch {
       return { detected_cameras: [{ index: 0, name: 'Integrated Laptop Webcam (Index 0)', resolution: '640x480', fps: 30 }] };
     }
@@ -127,7 +127,7 @@ export const api = {
   getIncidents: async (): Promise<Incident[]> => {
     try {
       const res = await axios.get(`${API_BASE}/incidents`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -157,7 +157,7 @@ export const api = {
       const res = await axios.get(`${API_BASE}/evidence`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -169,7 +169,7 @@ export const api = {
       const res = await axios.get(`${API_BASE}/evidence`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -197,11 +197,15 @@ export const api = {
   },
 
   getAdminEvidenceArchive: async (): Promise<EvidenceItem[]> => {
-    const token = localStorage.getItem('ibvap_token');
-    const res = await axios.get(`${API_BASE}/evidence/admin-archive`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    return res.data;
+    try {
+      const token = localStorage.getItem('ibvap_token');
+      const res = await axios.get(`${API_BASE}/evidence/admin-archive`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      return Array.isArray(res.data) ? res.data : [];
+    } catch {
+      return [];
+    }
   },
 
   adminRestoreEvidence: async (id: string) => {
@@ -253,7 +257,7 @@ export const api = {
   getBlockchainRecords: async (): Promise<BlockchainRecord[]> => {
     try {
       const res = await axios.get(`${API_BASE}/blockchain/records`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -263,7 +267,7 @@ export const api = {
   getModels: async (): Promise<AIModel[]> => {
     try {
       const res = await axios.get(`${API_BASE}/models`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -273,7 +277,7 @@ export const api = {
   getAlerts: async (): Promise<Alert[]> => {
     try {
       const res = await axios.get(`${API_BASE}/alerts`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -283,7 +287,7 @@ export const api = {
   getAuditLogs: async (): Promise<AuditLog[]> => {
     try {
       const res = await axios.get(`${API_BASE}/audit`);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
@@ -303,7 +307,7 @@ export const api = {
   getVehicles: async (params?: { camera_id?: string; flagged_status?: string; is_known?: boolean; registration_status?: string; search?: string; limit?: number }): Promise<DetectedVehicle[]> => {
     try {
       const res = await axios.get(`${API_BASE}/vehicles`, { params });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];
     }
