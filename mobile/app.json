@@ -1,0 +1,26 @@
+﻿{
+  "expo": {
+    "name": "KAVACH Commander",
+    "slug": "kavach-commander",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#090d16",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "gov.in.bsf.kavach.commander"
+    },
+    "android": {
+      "package": "gov.in.bsf.kavach.commander",
+      "adaptiveIcon": {
+        "backgroundColor": "#090d16"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
