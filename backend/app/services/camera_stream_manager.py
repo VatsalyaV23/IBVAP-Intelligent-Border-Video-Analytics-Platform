@@ -675,6 +675,20 @@ class StreamManager:
         except Exception as e:
             print(f"[IBVAP] Could not load YOLO: {e}")
 
+    def ensure_yolo(self) -> Optional[YOLO]:
+        if self.yolo_model is None:
+            try:
+                self.yolo_model = YOLO("yolov8n.pt")
+                print("[IBVAP] YOLOv8n loaded successfully.")
+            except Exception as e:
+                print(f"[IBVAP] Could not lazy load YOLOv8n: {e}")
+                try:
+                    self.yolo_model = YOLO("yolov8s.pt")
+                    print("[IBVAP] YOLOv8s loaded successfully as fallback.")
+                except Exception as ex:
+                    print(f"[IBVAP] Could not lazy load YOLOv8s: {ex}")
+        return self.yolo_model
+
     @staticmethod
     def scan_hardware_cameras(max_tested: int = 2) -> List[Dict[str, Any]]:
         """Scans hardware indices for physically connected USB/webcams safely without blocking."""

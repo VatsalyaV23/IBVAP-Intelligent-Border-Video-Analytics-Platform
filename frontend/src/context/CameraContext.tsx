@@ -86,10 +86,20 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const getActiveVisibleVideo = (): HTMLVideoElement | null => {
+    const list = Array.from(videoElementsRef.current);
+    const visible = list.find(v => v && (v.offsetParent !== null || v.clientWidth > 0 || v.clientHeight > 0));
+    if (visible) {
+      activeVideoRef.current = visible;
+      return visible;
+    }
+    return activeVideoRef.current || list[0] || null;
+  };
+
   const attachVideoElement = (videoEl: HTMLVideoElement | null) => {
     if (!videoEl) return;
     videoElementsRef.current.add(videoEl);
-    activeVideoRef.current = videoEl;
+    getActiveVisibleVideo();
     if (streamRef.current) {
       try {
         if (videoEl.srcObject !== streamRef.current) {
@@ -105,13 +115,15 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const detachVideoElement = (videoEl: HTMLVideoElement | null) => {
     if (!videoEl) return;
     videoElementsRef.current.delete(videoEl);
-    if (activeVideoRef.current === videoEl) {
-      activeVideoRef.current = Array.from(videoElementsRef.current)[0] || null;
-    }
+    getActiveVisibleVideo();
   };
 
   const attachOverlayCanvasElement = (canvasEl: HTMLCanvasElement | null) => {
-    overlayCanvasRef.current = canvasEl;
+    if (canvasEl) {
+      overlayCanvasRef.current = canvasEl;
+    } else if (overlayCanvasRef.current === canvasEl) {
+      overlayCanvasRef.current = null;
+    }
   };
 
   const stopCameraStreamInternal = () => {
@@ -150,7 +162,7 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     intervalRef.current = setInterval(() => {
       if (processingRef.current) return;
 
-      const video = activeVideoRef.current || Array.from(videoElementsRef.current)[0];
+      const video = getActiveVisibleVideo();
       if (!video || video.readyState < 2) return;
 
       const rawW = video.videoWidth || 640;
