@@ -254,31 +254,31 @@ export const Cameras: React.FC = () => {
           </h3>
         </div>
 
-        {/* Responsive Grid Layout: 3-4 cards/row desktop, 2-3 tablet, 1-2 mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Responsive Grid Layout: Exactly 3 camera cards per row on laptop/desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           
           {/* CARD 1: Physical Laptop Webcam Feed when System Cam Active */}
           {isSystemCamActive && (
-            <div className="bg-white dark:bg-[#0f172a] rounded-lg border border-sky-500/50 dark:border-sky-500/40 shadow-xs overflow-hidden flex flex-col justify-between">
+            <div className="bg-white dark:bg-[#0f172a] rounded-lg border border-sky-500/50 dark:border-sky-500/40 shadow-xs overflow-hidden flex flex-col justify-between font-mono text-[11px]">
               <div>
-                {/* Header */}
-                <div className="px-3 py-2 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 font-mono text-[11px]">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="font-bold text-sky-400 truncate">SYSTEM-CAM</span>
+                {/* Card Header Bar */}
+                <div className="px-3 py-2 bg-slate-100 dark:bg-slate-900 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 font-mono text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate">SYSTEM-CAM</span>
                   </div>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[9px] font-bold uppercase">
-                    PHYSICAL WEBCAM
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 uppercase">
+                    {systemStatus.toUpperCase()}
                   </span>
                 </div>
 
                 {/* System Camera Stream Container */}
                 <div className="relative aspect-video w-full bg-slate-950 overflow-hidden">
-                  <SystemCameraFeed />
+                  <SystemCameraFeed bare />
                 </div>
 
                 {/* Real-time YOLO Telemetry Metrics */}
-                <div className="p-3 font-mono text-[10px] grid grid-cols-2 gap-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+                <div className="p-2.5 font-mono text-[10px] grid grid-cols-2 gap-1.5 bg-slate-50/60 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                     <span className="text-slate-400">👤 Persons:</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">{systemPersonCount}</span>
@@ -291,25 +291,25 @@ export const Cameras: React.FC = () => {
                     <span className="text-slate-400">⚡ FPS:</span>
                     <span className="font-bold text-sky-400">{systemFps} FPS</span>
                   </div>
-                  <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 truncate">
                     <span className="text-slate-400">📐 Res:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">{systemRes}</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 truncate">{systemRes}</span>
                   </div>
                 </div>
               </div>
 
-              {/* System Camera Controls */}
-              <div className="p-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-1.5 font-mono text-[10px]">
+              {/* System Camera Action Bar */}
+              <div className="p-2 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between font-mono text-[10px]">
                 <span className="text-emerald-500 font-bold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                   STREAMING LIVE
                 </span>
                 <button
                   onClick={() => stopCamera()}
-                  className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors cursor-pointer flex items-center gap-1"
+                  className="px-2 py-1 rounded bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 font-bold transition-colors cursor-pointer flex items-center gap-1"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[12px]">videocam_off</span>
+                  <span className="material-symbols-outlined text-[11px]">videocam_off</span>
                   Stop Camera
                 </button>
               </div>

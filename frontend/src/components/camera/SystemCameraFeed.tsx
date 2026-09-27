@@ -3,9 +3,10 @@ import { useCamera } from '../../context/CameraContext';
 
 interface SystemCameraFeedProps {
   onClose?: () => void;
+  bare?: boolean;
 }
 
-export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) => {
+export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose, bare }) => {
   const {
     status,
     errorMessage,
@@ -53,6 +54,83 @@ export const SystemCameraFeed: React.FC<SystemCameraFeedProps> = ({ onClose }) =
   const handleStopClick = () => {
     stopCamera();
   };
+
+  const videoContent = (
+    <div className="relative aspect-video w-full overflow-hidden bg-slate-950 flex items-center justify-center">
+      {/* Error / Permission Denied Screen */}
+      {status !== 'Connected' && status !== 'Connecting' && (
+        <div className="p-4 text-center flex flex-col items-center justify-center gap-2 max-w-xs">
+          <div className="w-10 h-10 rounded-full bg-rose-950/80 text-rose-400 flex items-center justify-center border border-rose-800">
+            <span className="material-symbols-outlined text-[22px]">
+              {status === 'Permission Denied' ? 'lock' : 'videocam_off'}
+            </span>
+          </div>
+          <div>
+            <h4 className="font-bold text-[12px] text-white font-mono">
+              {status === 'Permission Denied'
+                ? 'Camera Permission Denied'
+                : status === 'Camera Unavailable'
+                ? 'Camera Unavailable'
+                : status === 'Stopped'
+                ? 'Webcam Stopped'
+                : 'Camera Error'}
+            </h4>
+            <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+              {errorMessage || 'Click "Start Camera" below to initiate physical stream.'}
+            </p>
+          </div>
+          <button
+            onClick={() => startCamera(selectedDeviceId)}
+            className="mt-1 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[10px] font-bold uppercase transition-colors cursor-pointer"
+            type="button"
+          >
+            Start Camera
+          </button>
+        </div>
+      )}
+
+      {/* Live HTML5 Video Element */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className={`w-full h-full object-cover ${status === 'Connected' ? 'block' : 'hidden'}`}
+      />
+
+      {/* AI Bounding Box Overlay Canvas */}
+      <canvas
+        ref={overlayCanvasRef}
+        className={`absolute inset-0 w-full h-full pointer-events-none ${status === 'Connected' ? 'block' : 'hidden'}`}
+      />
+
+      {/* Telemetry HUD Overlay */}
+      {status === 'Connected' && (
+        <div className="absolute inset-0 p-2 flex flex-col justify-between pointer-events-none">
+          <div className="flex items-center justify-between text-white/90 font-mono text-[9px] bg-black/65 backdrop-blur-xs px-2 py-0.5 rounded">
+            <span>SRC: WEBCAM ({resolution})</span>
+            <span className="text-emerald-400 font-bold">YOLOv8 Active | {fps} FPS</span>
+          </div>
+
+          {latestPlate && (
+            <div className="self-center bg-black/85 border border-slate-700 backdrop-blur-md px-2.5 py-0.5 rounded flex items-center gap-1.5 font-mono text-[10px] text-white">
+              <span className="text-sky-400 font-bold">PLATE:</span>
+              <span className="font-black text-amber-300 tracking-wider">{latestPlate.license_plate}</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-slate-300 font-mono text-[9px] bg-black/65 backdrop-blur-xs px-2 py-0.5 rounded">
+            <span>{new Date().toLocaleTimeString()} IST</span>
+            <span className="text-sky-400 font-bold">LIVE FEED</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (bare) {
+    return videoContent;
+  }
 
   return (
     <div className="rounded-lg overflow-hidden bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col w-full">
