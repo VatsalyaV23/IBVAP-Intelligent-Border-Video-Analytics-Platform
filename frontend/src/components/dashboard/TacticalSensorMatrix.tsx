@@ -3,20 +3,28 @@ import { api, getMediaUrl } from '../../api/client';
 import { Camera, DetectedVehicle } from '../../types';
 import { ConnectCameraModal } from '../camera/ConnectCameraModal';
 import { SystemCameraFeed } from '../camera/SystemCameraFeed';
+import { useCamera } from '../../context/CameraContext';
 
 interface TacticalSensorMatrixProps {
   selectedCam?: string;
 }
 
 export const TacticalSensorMatrix: React.FC<TacticalSensorMatrixProps> = ({ selectedCam = 'ALL' }) => {
+  const { isSystemCamActive, startCamera } = useCamera();
   const [ticker, setTicker] = useState<string>('00:00:00:00 IST');
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [latestVehicle, setLatestVehicle] = useState<DetectedVehicle | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [showSystemCam, setShowSystemCam] = useState<boolean>(false);
+  const [showSystemCam, setShowSystemCam] = useState<boolean>(isSystemCamActive);
   const [captureMsg, setCaptureMsg] = useState<string | null>(null);
   const [capturingId, setCapturingId] = useState<string | null>(null);
   const [mountKey] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    if (isSystemCamActive) {
+      setShowSystemCam(true);
+    }
+  }, [isSystemCamActive]);
 
   // Live IST sub-second clock
   useEffect(() => {

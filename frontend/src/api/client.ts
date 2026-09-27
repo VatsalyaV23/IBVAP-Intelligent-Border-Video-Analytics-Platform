@@ -4,7 +4,7 @@ import {
   BlockchainStatus, BlockchainRecord, AIModel, Alert, AuditLog, SystemHealthData, DetectedVehicle
 } from '../types';
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 
 export const getMediaUrl = (path: string): string => {
@@ -12,6 +12,17 @@ export const getMediaUrl = (path: string): string => {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return API_BASE_URL ? `${API_BASE_URL}${cleanPath}` : cleanPath;
+};
+
+export const getWebSocketUrl = (path: string = '/ws/dashboard'): string => {
+  if (import.meta.env.VITE_WS_BASE_URL) {
+    return import.meta.env.VITE_WS_BASE_URL;
+  }
+  const isSecure = API_BASE_URL.startsWith('https://') || window.location.protocol === 'https:';
+  const wsProtocol = isSecure ? 'wss:' : 'ws:';
+  const host = API_BASE_URL ? API_BASE_URL.replace(/^https?:\/\//, '') : window.location.host;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${wsProtocol}//${host}${cleanPath}`;
 };
 
 export const api = {
