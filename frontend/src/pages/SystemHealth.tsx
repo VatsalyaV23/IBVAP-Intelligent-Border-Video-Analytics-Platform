@@ -32,7 +32,7 @@ export const SystemHealth: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {health && Object.entries(health.subsystems).map(([key, val]) => (
+        {health && health.subsystems && Object.entries(health.subsystems || {}).map(([key, val]) => (
           <div
             key={key}
             className="bg-white dark:bg-[#0f172a] rounded border border-slate-200 dark:border-slate-800 shadow-sm p-4 flex items-center justify-between"

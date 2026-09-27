@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { Incident } from '../types';
 import { HashBadge } from '../components/common/HashBadge';
@@ -154,10 +154,10 @@ export const Incidents: React.FC = () => {
               {/* Timeline Reconstruction */}
               <div>
                 <span className="font-mono text-[11px] uppercase font-bold text-slate-600 dark:text-slate-400 block mb-2">
-                  Reconstructed Timeline ({selectedIncident.timeline.length} Steps)
+                  Reconstructed Timeline ({(selectedIncident.timeline || []).length} Steps)
                 </span>
                 <div className="relative pl-4 space-y-2.5 font-mono text-[11px] before:content-[''] before:absolute before:left-1 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200 dark:before:bg-slate-800">
-                  {selectedIncident.timeline.map((t, idx) => (
+                  {(selectedIncident.timeline || []).map((t, idx) => (
                     <div key={idx} className="relative group">
                       <span className="absolute -left-[15px] top-1.5 w-2 h-2 rounded-full bg-sky-500"></span>
                       <div className="flex items-baseline justify-between">
