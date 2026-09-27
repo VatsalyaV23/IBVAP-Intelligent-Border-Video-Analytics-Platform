@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../../api/client';
+import { useCamera } from '../../context/CameraContext';
 
 interface ConnectCameraModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface ConnectCameraModalProps {
 }
 
 export const ConnectCameraModal: React.FC<ConnectCameraModalProps> = ({ isOpen, onClose, onCameraAdded }) => {
+  const { startCamera } = useCamera();
   const [activeTab, setActiveTab] = useState<'hardware' | 'ip' | 'file'>('hardware');
   const [hardwareCameras, setHardwareCameras] = useState<Array<{ index: number; name: string; resolution: string; fps: number }>>([]);
   const [scanning, setScanning] = useState<boolean>(false);
@@ -65,11 +67,18 @@ export const ConnectCameraModal: React.FC<ConnectCameraModalProps> = ({ isOpen, 
   const handleConnectHardware = async (cam: { index: number; name: string }) => {
     try {
       setConnecting(true);
+      await startCamera(String(cam.index));
       await api.connectHardwareCamera(cam.index, cam.name, `Local Device Port ${cam.index}`);
       onCameraAdded();
       onClose();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Failed to connect camera');
+      try {
+        await api.connectHardwareCamera(cam.index, cam.name, `Local Device Port ${cam.index}`);
+        onCameraAdded();
+        onClose();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || 'Failed to connect camera');
+      }
     } finally {
       setConnecting(false);
     }
@@ -78,11 +87,18 @@ export const ConnectCameraModal: React.FC<ConnectCameraModalProps> = ({ isOpen, 
   const handleConnectLaptopWebcam = async () => {
     try {
       setConnecting(true);
+      await startCamera();
       await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
       onCameraAdded();
       onClose();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Failed to connect laptop camera');
+      try {
+        await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
+        onCameraAdded();
+        onClose();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || 'Failed to connect laptop camera');
+      }
     } finally {
       setConnecting(false);
     }

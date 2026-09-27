@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { api, getMediaUrl } from '../api/client';
 import { Camera } from '../types';
 import { ConnectCameraModal } from '../components/camera/ConnectCameraModal';
+import { SystemCameraFeed } from '../components/camera/SystemCameraFeed';
+import { useCamera } from '../context/CameraContext';
 
 export const Cameras: React.FC = () => {
+  const { startCamera, isSystemCamActive } = useCamera();
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [hardwareDevices, setHardwareDevices] = useState<any[]>([]);
@@ -63,11 +66,18 @@ export const Cameras: React.FC = () => {
 
   const handleQuickConnect = async (index: number, name: string) => {
     try {
+      await startCamera(String(index));
       await api.connectHardwareCamera(index, name, `Hardware Port ${index}`);
       fetchCameras();
       scanHardware();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Failed to connect');
+      try {
+        await api.connectHardwareCamera(index, name, `Hardware Port ${index}`);
+        fetchCameras();
+        scanHardware();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || 'Failed to connect');
+      }
     }
   };
 
@@ -137,10 +147,16 @@ export const Cameras: React.FC = () => {
           <button
             onClick={async () => {
               try {
+                await startCamera();
                 await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
                 await fetchCameras();
               } catch (e: any) {
-                alert(e?.response?.data?.detail || 'Failed to connect laptop camera');
+                try {
+                  await api.connectHardwareCamera(0, 'Integrated Laptop Webcam', 'Built-in Camera (Index 0)');
+                  await fetchCameras();
+                } catch (err: any) {
+                  alert(err?.response?.data?.detail || 'Failed to connect laptop camera');
+                }
               }
             }}
             className="px-3.5 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[11px] font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
