@@ -123,9 +123,7 @@ export const api = {
   },
 
   uploadVideoCamera: async (formData: FormData) => {
-    const res = await axios.post(`${API_BASE}/cameras/upload-video`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res = await axios.post(`${API_BASE}/cameras/upload-video`, formData);
     return res.data;
   },
 
@@ -133,9 +131,7 @@ export const api = {
     const formData = new FormData();
     formData.append('file', blob, 'frame.jpg');
     formData.append('camera_id', cameraId);
-    const res = await axios.post(`${API_BASE}/cameras/process-frame`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res = await axios.post(`${API_BASE}/cameras/process-frame`, formData);
     return res.data;
   },
 
@@ -350,9 +346,7 @@ export const api = {
   },
 
   scanVehiclePlate: async (formData: FormData): Promise<DetectedVehicle> => {
-    const res = await axios.post(`${API_BASE}/vehicles/scan-plate`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res = await axios.post(`${API_BASE}/vehicles/scan-plate`, formData);
     return res.data;
   }
 };

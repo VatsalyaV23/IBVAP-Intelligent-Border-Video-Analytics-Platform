@@ -29,6 +29,16 @@ from ai_engine.ocr.paddle_ocr_engine import paddle_ocr_engine
 
 last_process_frame_incident_time: Dict[str, float] = {}
 
+def get_class_name(model_or_names, cls_id: int) -> str:
+    if model_or_names is None:
+        return "object"
+    names = getattr(model_or_names, 'names', model_or_names)
+    if isinstance(names, dict):
+        return names.get(cls_id, "object")
+    elif isinstance(names, (list, tuple)) and 0 <= cls_id < len(names):
+        return names[cls_id]
+    return "object"
+
 router = APIRouter(prefix="/cameras", tags=["Cameras"])
 
 class TestConnectionRequest(BaseModel):
@@ -512,10 +522,10 @@ async def process_frame(
     if yolo:
         try:
             print(f"[IBVAP-YOLO] INFERENCE_START camera_id={camera_id} frame_dim={w}x{h}")
-            results = yolo(frame, verbose=False, conf=0.25, imgsz=480)[0]
+            results = yolo(frame, verbose=False, conf=0.15, imgsz=480)[0]
             for idx_box, box in enumerate(results.boxes):
                 cls_id = int(box.cls[0].item())
-                cls_name = yolo.names.get(cls_id, "object")
+                cls_name = get_class_name(yolo, cls_id).lower().strip()
                 conf = float(box.conf[0].item())
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
 
@@ -569,7 +579,7 @@ async def process_frame(
                 (cx, cy, cw, ch) = cv2.boundingRect(c)
                 aspect = ch / float(cw) if cw > 0 else 0
                 area = cw * ch
-                if 1.1 <= aspect <= 4.0 and area >= (w * h * 0.04) and cw < w * 0.9 and ch < h * 0.9:
+                if 0.5 <= aspect <= 5.0 and area >= (w * h * 0.02) and cw < w * 0.98 and ch < h * 0.98:
                     detections.append({
                         "class": "person",
                         "confidence": 0.88,

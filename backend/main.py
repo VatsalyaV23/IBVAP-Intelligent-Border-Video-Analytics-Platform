@@ -89,7 +89,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS
+# CORS Configuration
 allowed_origins_env = os.getenv("CORS_ORIGINS", os.getenv("FRONTEND_URL", "")).split(",")
 allowed_origins = [
     "https://ibvap-intelligent-border-anal.vercel.app",
@@ -106,7 +106,7 @@ for origin in allowed_origins_env:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

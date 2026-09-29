@@ -12,6 +12,16 @@ from ai_engine.behavior.intrusion import ZoneAnalytics
 from ai_engine.ocr.paddle_ocr_engine import paddle_ocr_engine
 from app.services.camera_diagnostics import CameraDiagnosticEngine, CameraDiagnosticCodes, sanitize_stream_url
 
+def get_class_name(model_or_names, cls_id: int) -> str:
+    if model_or_names is None:
+        return "object"
+    names = getattr(model_or_names, 'names', model_or_names)
+    if isinstance(names, dict):
+        return names.get(cls_id, "object")
+    elif isinstance(names, (list, tuple)) and 0 <= cls_id < len(names):
+        return names[cls_id]
+    return "object"
+
 class CameraSourceType:
     RTSP = "RTSP"
     WEBCAM = "WEBCAM"
@@ -407,10 +417,10 @@ class LiveCameraFeed:
 
             if self.yolo_model:
                 try:
-                    results = self.yolo_model(frame, verbose=False, conf=0.35, imgsz=640)[0]
+                    results = self.yolo_model(frame, verbose=False, conf=0.25, imgsz=640)[0]
                     for idx_box, box in enumerate(results.boxes):
                         cls_id = int(box.cls[0].item())
-                        cls_name = self.yolo_model.names.get(cls_id, "object")
+                        cls_name = get_class_name(self.yolo_model, cls_id)
                         conf = float(box.conf[0].item())
                         x1, y1, x2, y2 = box.xyxy[0].tolist()
 
@@ -527,6 +537,7 @@ class LiveCameraFeed:
                             sp_conf = sp["confidence"]
                             sp_known = False
                             sp_color = (0, 255, 128) if sp_known else (0, 69, 255)
+                            sp_bbox = sp.get("plate_bbox") or [int(w * 0.2), int(h * 0.6), int(w * 0.8), int(h * 0.85)]
 
                             # Draw In-Camera Plate Bounding Box
                             cv2.rectangle(annotated, (sp_bbox[0], sp_bbox[1]), (sp_bbox[2], sp_bbox[3]), sp_color, 2)
@@ -548,7 +559,7 @@ class LiveCameraFeed:
                                     owner_or_unit="BSF Authorized Fleet" if sp_known else "Unregistered Civilian",
                                     reg_status="KNOWN_AUTHORIZED" if sp_known else "UNKNOWN_UNREGISTERED",
                                     flagged="CLEAR" if sp_known else "WATCHLIST",
-                                    crop=sp.get("crop", frame[sp_bbox[1]:sp_bbox[3], sp_bbox[0]:sp_bbox[2]])
+                                    crop=sp.get("crop", frame[max(0, sp_bbox[1]):min(h, sp_bbox[3]), max(0, sp_bbox[0]):min(w, sp_bbox[2])])
                                 )
                 except Exception:
                     pass

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import { BlockchainStatus, BlockchainRecord } from '../types';
 import { HashBadge } from '../components/common/HashBadge';
@@ -118,7 +118,7 @@ export const Blockchain: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
-                      ✓ {r.status}
+                      {r.status}
                     </span>
                   </td>
                 </tr>

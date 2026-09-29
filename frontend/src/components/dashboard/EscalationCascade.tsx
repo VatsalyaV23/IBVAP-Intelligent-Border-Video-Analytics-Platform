@@ -48,7 +48,7 @@ export const EscalationCascade: React.FC = () => {
                 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
             }`}>
-              {tier >= 1 ? '✓' : '1'}
+              {tier >= 1 ? <span className="material-symbols-outlined text-[12px]">check</span> : '1'}
             </span>
             <span className="text-slate-700 dark:text-slate-300 text-[9px] font-semibold">AI DETECT</span>
           </div>
@@ -61,7 +61,7 @@ export const EscalationCascade: React.FC = () => {
                 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
             }`}>
-              {tier >= 2 ? '✓' : '2'}
+              {tier >= 2 ? <span className="material-symbols-outlined text-[12px]">check</span> : '2'}
             </span>
             <span className="text-slate-700 dark:text-slate-300 text-[9px] font-semibold">INCIDENT</span>
           </div>

@@ -73,10 +73,10 @@ export const TacticalSensorMatrix: React.FC<TacticalSensorMatrixProps> = ({ sele
       setCaptureMsg(`CAPTURING LIVE FRAME FROM ${cameraId}...`);
       const res = await api.captureLiveEvidence(cameraId);
       if (res.status === 'SUCCESS') {
-        setCaptureMsg(`✓ EVIDENCE NOTARIZED ON BLOCK #${res.block_number} (SHA-256: ${res.sha256_hash.slice(0, 16)}...)`);
+        setCaptureMsg(`EVIDENCE NOTARIZED ON BLOCK #${res.block_number} (SHA-256: ${res.sha256_hash.slice(0, 16)}...)`);
       }
     } catch (e: any) {
-      setCaptureMsg(`⚠ LIVE CAPTURE COMPLETED (OFF-CHAIN PROOF READY)`);
+      setCaptureMsg(`LIVE CAPTURE COMPLETED (OFF-CHAIN PROOF READY)`);
     } finally {
       setCapturingId(null);
       setTimeout(() => setCaptureMsg(null), 5000);

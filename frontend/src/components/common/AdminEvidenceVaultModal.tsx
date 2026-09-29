@@ -82,7 +82,7 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
   const handleRestore = async (id: string) => {
     try {
       await api.adminRestoreEvidence(id);
-      setActionMsg(`✓ Evidence ${id} restored to user operator view.`);
+      setActionMsg(`Evidence ${id} restored to user operator view.`);
       fetchArchive();
       if (onRefreshParent) onRefreshParent();
     } catch (err: any) {
@@ -96,7 +96,7 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
     if (!window.confirm(`PERMANENT PURGE: Erase database record & physical file on disk for evidence [${id}]?`)) return;
     try {
       await api.adminPurgeEvidence(id);
-      setActionMsg(`✓ Permanently purged evidence ${id} from DB & disk.`);
+      setActionMsg(`Permanently purged evidence ${id} from DB & disk.`);
       fetchArchive();
       if (onRefreshParent) onRefreshParent();
     } catch (err: any) {
@@ -110,7 +110,7 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
     if (!window.confirm('PERMANENT DESTRUCTION: Purge all soft-deleted user evidence records and erase files from physical storage?')) return;
     try {
       const res = await api.adminPurgeAllEvidence();
-      setActionMsg(`✓ ${res.message || 'All soft-deleted evidence permanently erased.'}`);
+      setActionMsg(`${res.message || 'All soft-deleted evidence permanently erased.'}`);
       fetchArchive();
       if (onRefreshParent) onRefreshParent();
     } catch (err: any) {
@@ -193,6 +193,11 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
                 <p className="text-[11px] text-slate-400">
                   Enter Command Officer credentials to access soft-deleted operator evidences.
                 </p>
+                <div className="p-2.5 rounded bg-amber-950/40 border border-amber-800/60 text-amber-200 text-[10px] text-left w-full font-mono">
+                  <span className="font-bold text-amber-300 block mb-0.5">COMMANDER CLEARANCE CREDENTIALS:</span>
+                  <div>Username: <code className="text-white font-bold bg-amber-900/60 px-1 py-0.5 rounded">commander</code> or <code className="text-white font-bold bg-amber-900/60 px-1 py-0.5 rounded">admin</code></div>
+                  <div>Password: <code className="text-white font-bold bg-amber-900/60 px-1 py-0.5 rounded">Commander@123</code> or <code className="text-white font-bold bg-amber-900/60 px-1 py-0.5 rounded">admin123</code></div>
+                </div>
               </div>
 
               {authError && (
@@ -400,7 +405,7 @@ export const AdminEvidenceVaultModal: React.FC<AdminEvidenceVaultModalProps> = (
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 result.match ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-rose-950 text-rose-300 border border-rose-800'
                               }`}>
-                                ✓ {result.status}
+                                {result.status}
                               </span>
                             )}
                           </div>

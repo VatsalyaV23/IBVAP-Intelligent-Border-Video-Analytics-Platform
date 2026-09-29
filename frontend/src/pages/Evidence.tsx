@@ -49,7 +49,7 @@ export const Evidence: React.FC = () => {
     try {
       setDeletingId(id);
       await api.deleteEvidence(id);
-      setActionMsg(`✓ Evidence record ${id} deleted.`);
+      setActionMsg(`Evidence record ${id} deleted.`);
       fetchEvidence();
     } catch (e: any) {
       alert(e?.response?.data?.detail || 'Failed to delete evidence item');
@@ -64,7 +64,7 @@ export const Evidence: React.FC = () => {
     try {
       setDeletingAll(true);
       const res = await api.deleteAllEvidence();
-      setActionMsg(`✓ All evidence records deleted.`);
+      setActionMsg(`All evidence records deleted.`);
       fetchEvidence();
     } catch (e: any) {
       alert(e?.response?.data?.detail || 'Failed to delete all evidence records');
@@ -172,7 +172,7 @@ export const Evidence: React.FC = () => {
                   <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
                     result.match ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                   }`}>
-                    ✓ {result.status}
+                    {result.status}
                   </span>
                 ) : (
                   <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">

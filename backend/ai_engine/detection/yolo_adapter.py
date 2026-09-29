@@ -4,6 +4,16 @@ from typing import List
 from ai_engine.core.base_adapters import BaseDetectionModel, DetectionResult, BoundingBox, ModelProvenance
 from ai_engine.core.model_registry import model_registry
 
+def _get_class_name(model_or_names, cls_id: int) -> str:
+    if model_or_names is None:
+        return "unknown"
+    names = getattr(model_or_names, 'names', model_or_names)
+    if isinstance(names, dict):
+        return names.get(cls_id, "unknown")
+    elif isinstance(names, (list, tuple)) and 0 <= cls_id < len(names):
+        return names[cls_id]
+    return "unknown"
+
 class YOLOAdapter(BaseDetectionModel):
     def __init__(self, model_name: str = "IBVAP-PERSON-v1", version: str = "v3.2"):
         self.model_name = model_name
@@ -46,14 +56,12 @@ class YOLOAdapter(BaseDetectionModel):
         if image is None or image.size == 0:
             return results
 
-        h, w = image.shape[:2]
-
         if self.yolo_model:
             try:
                 preds = self.yolo_model(image, verbose=False)[0]
                 for box in preds.boxes:
                     cls_id = int(box.cls[0].item())
-                    cls_name = self.yolo_model.names.get(cls_id, "unknown")
+                    cls_name = _get_class_name(self.yolo_model, cls_id)
                     conf = float(box.conf[0].item())
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
                     results.append(DetectionResult(

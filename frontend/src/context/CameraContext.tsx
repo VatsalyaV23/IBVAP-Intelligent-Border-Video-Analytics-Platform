@@ -89,12 +89,17 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const getActiveVisibleVideo = (): HTMLVideoElement | null => {
     const list = Array.from(videoElementsRef.current);
+    const readyVisible = list.find(v => v && v.srcObject && (v.readyState >= 2 || v.videoWidth > 0));
+    if (readyVisible) {
+      activeVideoRef.current = readyVisible;
+      return readyVisible;
+    }
     const visible = list.find(v => v && (v.offsetParent !== null || v.clientWidth > 0 || v.clientHeight > 0));
     if (visible) {
       activeVideoRef.current = visible;
       return visible;
     }
-    return activeVideoRef.current || list[0] || persistentVideoRef.current || null;
+    return persistentVideoRef.current || activeVideoRef.current || list[0] || null;
   };
 
   const attachVideoElement = (videoEl: HTMLVideoElement | null) => {
@@ -160,14 +165,24 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setStatus('Stopped');
   };
 
+  const lastErrorTimeRef = useRef<number>(0);
+  const errorBackoffUntilRef = useRef<number>(0);
+
   const startInferenceLoop = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(() => {
       if (processingRef.current) return;
+      if (Date.now() < errorBackoffUntilRef.current) return;
 
-      const video = getActiveVisibleVideo() || persistentVideoRef.current;
-      if (!video || video.readyState < 2) return;
+      let video = getActiveVisibleVideo();
+      if (!video || (video.readyState < 2 && (!video.videoWidth || video.videoWidth === 0))) {
+        if (persistentVideoRef.current && (persistentVideoRef.current.readyState >= 2 || persistentVideoRef.current.videoWidth > 0)) {
+          video = persistentVideoRef.current;
+        } else {
+          return;
+        }
+      }
 
       const rawW = video.videoWidth || 640;
       const rawH = video.videoHeight || 480;
@@ -213,7 +228,12 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             drawDetectionsOverlay(result.detections || [], result.plate_scanned, targetW, targetH);
           }
         } catch (e) {
-          // Silent frame drop recovery
+          const now = Date.now();
+          if (now - lastErrorTimeRef.current > 10000) {
+            console.warn('[IBVAP-INFERENCE] processFrame standby / connection notice:', e);
+            lastErrorTimeRef.current = now;
+          }
+          errorBackoffUntilRef.current = now + 1500;
         } finally {
           processingRef.current = false;
         }
@@ -407,12 +427,13 @@ export const CameraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         muted
         style={{
           position: 'fixed',
-          top: -9999,
-          left: -9999,
+          top: 0,
+          left: 0,
           width: 640,
           height: 480,
-          opacity: 0,
-          pointerEvents: 'none'
+          opacity: 0.001,
+          pointerEvents: 'none',
+          zIndex: -9999
         }}
       />
       {children}

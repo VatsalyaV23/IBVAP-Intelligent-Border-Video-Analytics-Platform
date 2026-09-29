@@ -190,7 +190,7 @@ export const IncidentActionCard: React.FC<IncidentActionCardProps> = ({ onViewEv
           type="button"
         >
           <span className="material-symbols-outlined text-[18px]">e911_emergency</span>
-          <span>{qrtDispatched ? '✓ QRT TEAM EN ROUTE' : 'Dispatch Quick Reaction Team (QRT)'}</span>
+          <span>{qrtDispatched ? 'QRT TEAM EN ROUTE' : 'Dispatch Quick Reaction Team (QRT)'}</span>
         </button>
       </div>
     </div>

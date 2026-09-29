@@ -101,7 +101,7 @@ export const Incidents: React.FC = () => {
                       {new Date(inc.first_seen).toLocaleTimeString()}
                     </span>
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold block mt-1">
-                      ✓ {inc.blockchain_status}
+                      {inc.blockchain_status}
                     </span>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export const Incidents: React.FC = () => {
               <div className="p-3 bg-indigo-50/60 dark:bg-indigo-950/40 rounded border border-indigo-200 dark:border-indigo-900/60 flex flex-col gap-1.5 font-mono text-[11px]">
                 <div className="flex justify-between items-center text-indigo-900 dark:text-indigo-300">
                   <span className="font-bold">Ledger Status:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓ {selectedIncident.blockchain_status}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{selectedIncident.blockchain_status}</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-indigo-100 dark:border-indigo-900/40">
                   <span>Sector Assignment:</span>

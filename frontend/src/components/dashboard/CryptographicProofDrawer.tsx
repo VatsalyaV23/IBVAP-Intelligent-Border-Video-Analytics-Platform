@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { EvidenceItem } from '../../types';
 import { HashBadge } from '../common/HashBadge';
@@ -36,16 +36,16 @@ export const CryptographicProofDrawer: React.FC = () => {
       const res = await api.verifyEvidence(evidence.id);
       setTimeout(() => {
         if (res.match) {
-          setStatusText('✓ INTEGRITY VERIFIED (LOCAL LEDGER SEALED)');
+          setStatusText('INTEGRITY VERIFIED (LOCAL LEDGER SEALED)');
           setIsVerified(true);
         } else {
-          setStatusText('⚠ INTEGRITY MISMATCH');
+          setStatusText('INTEGRITY MISMATCH');
         }
         setLoading(false);
       }, 500);
     } catch (e) {
       setTimeout(() => {
-        setStatusText('✓ SHA-256 INTEGRITY VALIDATED');
+        setStatusText('SHA-256 INTEGRITY VALIDATED');
         setIsVerified(true);
         setLoading(false);
       }, 500);
